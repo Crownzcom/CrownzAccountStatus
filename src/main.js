@@ -4,6 +4,15 @@ import { Client, Databases } from "node-appwrite";
 // It's executed each time the function is triggered by an account deletion event
 export default async ({ req, res, log, error }) => {
   try {
+    // Assuming the account ID is passed in the request body (You need to confirm the actual structure)
+    // This might change based on actual event data structure
+    const accountData = {
+      userId: req.query.$id,
+      label: req.query.labels,
+    };
+
+    log(`AccountID: ${accountData.userId}`);
+
     // Initialize the Appwrite client
     const client = new Client()
       .setEndpoint("https://cloud.appwrite.io/v1") // Set your Appwrite endpoint
@@ -13,14 +22,15 @@ export default async ({ req, res, log, error }) => {
     // Initialize the Appwrite database client
     const databases = new Databases(client, process.env.APPWRITE_DATABASE_ID); // Replace with your database ID
 
-    // Assuming the account ID is passed in the request body (You need to confirm the actual structure)
-    const accountID = req.payload.$id; // This might change based on actual event data structure
-
     // Update the document in the database
-    await databases.updateDocument(process.env.APPWRITE_COLLECTION_ID, accountID, {
-      accountStatus: "Deleted",
-    });
-    log(`Account status updated for accountID: ${accountID}`);
+    await databases.updateDocument(
+      process.env.APPWRITE_COLLECTION_ID,
+      accountData.userId,
+      {
+        accountStatus: "Deleted",
+      }
+    );
+    log(`Account status updated for accountID: ${accountData.userId}`);
 
     // Send a response back
     return res.json({
