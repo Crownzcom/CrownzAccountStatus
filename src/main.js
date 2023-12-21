@@ -29,6 +29,7 @@ export default async ({ req, res, log, error }) => {
     ? "kin"
     : "none";
   log(`User label determined: ${userLabel}`);
+  log(`User ID: ${accountID}`);
 
   //Update account status depending on label type (student or kin)
   if (userLabel === "kin") {
