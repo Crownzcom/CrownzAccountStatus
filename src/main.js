@@ -25,7 +25,7 @@ export default async ({ req, res, log, error }) => {
     // Update the document in the database
     await databases.updateDocument(
       process.env.APPWRITE_COLLECTION_ID,
-      accountData.userId,
+      "6582b68644efb522bb73",
       {
         accountStatus: "Deleted",
       }
@@ -34,7 +34,7 @@ export default async ({ req, res, log, error }) => {
 
     // Send a response back
     return res.json({
-      message: `Account status updated successfully for accountID: ${accountID}`,
+      message: `Account status updated successfully for accountID: ${accountData.userId}`,
     });
   } catch (e) {
     // Log and return error
