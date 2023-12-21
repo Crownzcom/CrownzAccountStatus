@@ -6,6 +6,7 @@ export default async ({ req, res, log, error }) => {
   try {
     // Assuming the account ID is passed in the request body (You need to confirm the actual structure)
     // This might change based on actual event data structure
+    log(JSON.stringify(req.query));
     const accountData = {
       userId: req.query.$id,
       label: req.query.labels,
