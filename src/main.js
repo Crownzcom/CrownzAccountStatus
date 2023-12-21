@@ -1,10 +1,10 @@
 import { Client, Databases } from "node-appwrite";
 
-const PROJECT_ID = process.env.PROJECT_ID;
-const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY;
-const DB_ID = process.env.DB_ID;
-const KIN_COLLECTION_ID = process.env.KIN_COLLECTION_ID;
-const STUD_COLLECTION_ID = process.env.STUD_COLLECTION_ID;
+const PROJECT_ID = process.env.PROJECT_ID; //.env
+const DB_ID = process.env.DB_ID; //.env
+const STUD_COLLECTION_ID = process.env.STUD_COLLECTION_ID; //.env
+const KIN_COLLECTION_ID = process.env.KIN_COLLECTION_ID; //.env
+const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY; //.env
 
 export default async ({ req, res, log, error }) => {
   try {
@@ -17,21 +17,27 @@ export default async ({ req, res, log, error }) => {
     // Initialize the Appwrite database client
     const databases = new Databases(client); // Replace with your database ID
 
-    // Extract the account ID from the request body
+    // Parse the request body and extract the account ID and labels
     const requestBody = JSON.parse(req.bodyRaw);
     const accountID = requestBody.$id;
-    log(`Account ID extracted: ${accountID}`);
+    const labels = requestBody.labels || [];
 
-    // Update the document in the database
-    await databases.updateDocument(DB_ID, "65706739032c0962d0a9", "6582b68644efb522bb73", {
-      accountStatus: "Deleted",
-    });
-    log(`Account status updated for accountID: ${accountID}`);
+    // Extract 'student' or 'kin' label
+    let userLabel = labels.includes("student")
+      ? "student"
+      : labels.includes("kin")
+      ? "kin"
+      : "none";
+    log(`User label determined: ${userLabel}`);
 
-    // Send a response back
-    return res.json({
-      message: `Account status updated successfully for accountID: ${accountID}`,
-    });
+    //Update account status depending on label type (student or kin)
+    if (userLabel === "kin") {
+      await queryCollectionAndUpdate(KIN_COLLECTION_ID, accountID, "kinID");
+    } else if (userLabel == "student") {
+      await queryCollectionAndUpdate(STUD_COLLECTION_ID, accountID, "studID");
+    } else {
+      return;
+    }
   } catch (e) {
     // Log and return error
     error(`Error updating account status: ${e.message}`);
@@ -40,3 +46,41 @@ export default async ({ req, res, log, error }) => {
     });
   }
 };
+
+// Checking for existing kin account
+async function queryCollectionAndUpdate(collection_id, account_id, IdType) {
+  //IdType: Is either 'studID' or 'kinID'
+  try {
+    let query = [];
+    query.push(Query.equal(IdType, account_id));
+
+    const response = await databases.listDocuments(DB_ID, collection_id, query);
+
+    if (response.documents.length > 0) {
+      // Returns first document in query given that it's always one document related to the account ID that's returned
+      log("Account exists in collection. Proceeding to update status ...");
+      const documentID = response.documents[0].$id;
+
+      return await updateStatus(collection_id, documentID);
+    } else {
+      log("Account does not exist in collection. Exting the fucntion...");
+    }
+    return;
+  } catch (error) {
+    log("Error Updating Account Status:", error);
+    context.error("Error Updating Account Status:", error);
+    throw error;
+  }
+}
+
+async function updateStatus(accountCollection_id, document_id) {
+  try {
+    // Update the document in the database
+    await databases.updateDocument(DB_ID, accountCollection_id, document_id, {
+      accountStatus: "Deleted",
+    });
+  } catch (error) {
+    context.error("Error Updating Account Status:", error);
+    throw error;
+  }
+}
