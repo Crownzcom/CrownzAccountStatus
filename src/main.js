@@ -7,85 +7,105 @@ const KIN_COLLECTION_ID = process.env.KIN_COLLECTION_ID; //.env
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY; //.env
 
 export default async ({ req, res, log, error }) => {
-  //   try {
-  // Initialize the Appwrite client
-  const client = new Client()
-    .setEndpoint("https://cloud.appwrite.io/v1")
-    .setProject(PROJECT_ID)
-    .setKey(APPWRITE_API_KEY);
+  try {
+    // Initialize the Appwrite client
+    const client = new Client()
+      .setEndpoint("https://cloud.appwrite.io/v1")
+      .setProject(PROJECT_ID)
+      .setKey(APPWRITE_API_KEY);
 
-  // Initialize the Appwrite database client
-  const databases = new Databases(client); // Replace with your database ID
+    // Initialize the Appwrite database client
+    const databases = new Databases(client); // Replace with your database ID
 
-  // Parse the request body and extract the account ID and labels
-  const requestBody = JSON.parse(req.bodyRaw);
-  const accountID = requestBody.$id;
-  const labels = requestBody.labels || [];
+    // Parse the request body and extract the account ID and labels
+    const requestBody = JSON.parse(req.bodyRaw);
+    const accountID = requestBody.$id;
+    const labels = requestBody.labels || [];
 
-  // Extract 'student' or 'kin' label
-  let userLabel = labels.includes("student")
-    ? "student"
-    : labels.includes("kin")
-    ? "kin"
-    : "none";
-  log(`User label determined: ${userLabel}`);
-  log(`User ID: ${accountID}`);
+    // Extract 'student' or 'kin' label
+    let userLabel = labels.includes("student")
+      ? "student"
+      : labels.includes("kin")
+      ? "kin"
+      : "none";
+    log(`User label determined: ${userLabel}`);
+    log(`User ID: ${accountID}`);
 
-  //Update account status depending on label type (student or kin)
-  if (userLabel === "kin") {
-    await queryCollectionAndUpdate(KIN_COLLECTION_ID, accountID, "kinID");
-  } else if (userLabel == "student") {
-    await queryCollectionAndUpdate(STUD_COLLECTION_ID, accountID, "studID");
-  } else {
-    return;
+    //Update account status depending on label type (student or kin)
+    if (userLabel === "kin") {
+      await queryCollectionAndUpdate(
+        KIN_COLLECTION_ID,
+        accountID,
+        "kinID",
+        databases
+      );
+    } else if (userLabel == "student") {
+      await queryCollectionAndUpdate(
+        STUD_COLLECTION_ID,
+        accountID,
+        "studID",
+        databases
+      );
+    } else {
+      return;
+    }
+    log("Account status changed successfully");
+  } catch (e) {
+    // Log and return error
+    //   error(`Error updating account status: ${e.message}`);
+    return res.json({
+      error: `Error updating account status: ${e.message}`,
+    });
   }
-  log("Account status changed successfully");
-  //   } catch (e) {
-  //     // Log and return error
-  //     error(`Error updating account status: ${e.message}`);
-  //     return res.json({
-  //       error: `Error updating account status: ${e.message}`,
-  //     });
-  //   }
 
   // =================================================================//
   /**------FUNCTION-----**/
   // Checking for existing kin account
-  async function queryCollectionAndUpdate(collection_id, account_id, IdType) {
+  async function queryCollectionAndUpdate(
+    collection_id,
+    account_id,
+    IdType,
+    databases
+  ) {
     //IdType: Is either 'studID' or 'kinID'
-    //   try {
-    let query = [];
-    query.push(Query.equal(IdType, account_id));
+    try {
+      let query = [];
+      query.push(Query.equal(IdType, account_id));
 
-    const response = await databases.listDocuments(DB_ID, collection_id, query);
+      const response = await databases.listDocuments(
+        DB_ID,
+        collection_id,
+        query
+      );
 
-    if (response.documents.length > 0) {
-      // Returns first document in query given that it's always one document related to the account ID that's returned
-      log("Account exists in collection. Proceeding to update status ...");
-      const documentID = response.documents[0].$id;
+      if (response.documents.length > 0) {
+        // Returns first document in query given that it's always one document related to the account ID that's returned
+        log("Account exists in collection. Proceeding to update status ...");
+        const documentID = response.documents[0].$id;
 
-      return await updateStatus(collection_id, documentID);
-    } else {
-      log("Account does not exist in collection. Exting the fucntion...");
-      return;
+        return await updateStatus(collection_id, documentID, databases);
+      } else {
+        log("Account does not exist in collection. Exting the fucntion...");
+        return context.res.empty();
+      }
+    } catch (error) {
+      // log("Error Updating Account Status:", error);
+      // error("Error Updating Account Status:", error);
+      throw error;
     }
-    //   } catch (error) {
-    //     // log("Error Updating Account Status:", error);
-    //     error("Error Updating Account Status:", error);
-    //     throw error;
-    //   }
   }
 
   //   Function to update the status of users in the collection
-  async function updateStatus(accountCollection_id, document_id) {
-    //   try {
-    // Update the document in the database
-    await databases.updateDocument(DB_ID, accountCollection_id, document_id, {
-      accountStatus: "Deleted",
-    });
-    //   } catch (error) {
-    //     error("Error Updating Account Status:", error);
-    //     throw error;
-    //   }
+  async function updateStatus(accountCollection_id, document_id, databases) {
+    try {
+      // Update the document in the database
+      await databases.updateDocument(DB_ID, accountCollection_id, document_id, {
+        accountStatus: "Deleted",
+      });
+      return context.res.empty();
+    } catch (error) {
+      // error("Error Updating Account Status:", error);
+      throw error;
+    }
   }
 };
