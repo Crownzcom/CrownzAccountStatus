@@ -32,14 +32,14 @@ export default async ({ req, res, log, error }) => {
     log(`User ID: ${accountID}`);
 
     //Update account status depending on label type (student or kin)
-    if (userLabel === "kin") {
+    if ( labels.includes("kin")) {
       await queryCollectionAndUpdate(
         KIN_COLLECTION_ID,
         accountID,
         "kinID",
         databases
       );
-    } else if (userLabel == "student") {
+    } else if (labels.includes("student")) {
       await queryCollectionAndUpdate(
         STUD_COLLECTION_ID,
         accountID,
@@ -47,6 +47,7 @@ export default async ({ req, res, log, error }) => {
         databases
       );
     } else {
+      log("Account status didn't change");
       return;
     }
     log("Account status changed successfully");
@@ -78,7 +79,7 @@ export default async ({ req, res, log, error }) => {
         query
       );
 
-      log("Query Respons: \n", JSON.parse(response));
+      log("Query Respons: ", JSON.parse(response));
 
       if (response.documents.length > 0) {
         // Returns first document in query given that it's always one document related to the account ID that's returned
