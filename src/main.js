@@ -11,7 +11,7 @@ export default async ({ req, res, log, error }) => {
       .setKey(process.env.APPWRITE_API_KEY);
 
     // Initialize the Appwrite database client
-    const databases = new Databases(client, "[DATABASE_ID]"); // Replace with your database ID
+    const databases = new Databases(client, process.env.APPWRITE_API_KEY.DATABASE_ID); // Replace with your database ID
 
     // Assuming the account ID is passed in the request body (You need to confirm the actual structure)
     const accountID = req.payload.$id; // This might change based on actual event data structure
