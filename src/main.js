@@ -38,6 +38,7 @@ export default async ({ req, res, log, error }) => {
     } else {
       return;
     }
+    log("Account status changed successfully");
   } catch (e) {
     // Log and return error
     error(`Error updating account status: ${e.message}`);
@@ -67,7 +68,7 @@ async function queryCollectionAndUpdate(collection_id, account_id, IdType) {
     }
     return;
   } catch (error) {
-    log("Error Updating Account Status:", error);
+    // log("Error Updating Account Status:", error);
     context.error("Error Updating Account Status:", error);
     throw error;
   }
