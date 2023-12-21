@@ -20,10 +20,11 @@ export default async ({ req, res, log, error }) => {
       .setKey(process.env.APPWRITE_API_KEY);
 
     // Initialize the Appwrite database client
-    const databases = new Databases(client, process.env.APPWRITE_DATABASE_ID); // Replace with your database ID
+    const databases = new Databases(client); // Replace with your database ID
 
     // Update the document in the database
     await databases.updateDocument(
+      process.env.APPWRITE_DATABASE_ID,
       process.env.APPWRITE_COLLECTION_ID,
       "6582b68644efb522bb73",
       {
@@ -44,3 +45,4 @@ export default async ({ req, res, log, error }) => {
     });
   }
 };
+s;
