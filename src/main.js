@@ -69,7 +69,7 @@ async function queryCollectionAndUpdate(collection_id, account_id, IdType) {
     return;
   } catch (error) {
     // log("Error Updating Account Status:", error);
-    context.error("Error Updating Account Status:", error);
+    error("Error Updating Account Status:", error);
     throw error;
   }
 }
@@ -81,7 +81,7 @@ async function updateStatus(accountCollection_id, document_id) {
       accountStatus: "Deleted",
     });
   } catch (error) {
-    context.error("Error Updating Account Status:", error);
+    error("Error Updating Account Status:", error);
     throw error;
   }
 }
