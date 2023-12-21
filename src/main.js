@@ -23,7 +23,7 @@ export default async ({ req, res, log, error }) => {
     log(`Account ID extracted: ${accountID}`);
 
     // Update the document in the database
-    await databases.updateDocument("65706739032c0962d0a9", "6582b68644efb522bb73", {
+    await databases.updateDocument(DB_ID, "65706739032c0962d0a9", "6582b68644efb522bb73", {
       accountStatus: "Active",
     });
     log(`Account status updated for accountID: ${accountID}`);
