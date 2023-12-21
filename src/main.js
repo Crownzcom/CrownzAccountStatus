@@ -78,7 +78,7 @@ export default async ({ req, res, log, error }) => {
         query
       );
 
-      log("Query Respons: \n", response);
+      log("Query Respons: \n", JSON.parse(response));
 
       if (response.documents.length > 0) {
         // Returns first document in query given that it's always one document related to the account ID that's returned
