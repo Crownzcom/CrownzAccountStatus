@@ -17,7 +17,7 @@ export default async ({ req, res, log, error }) => {
     const accountID = req.payload.$id; // This might change based on actual event data structure
 
     // Update the document in the database
-    await databases.updateDocument("65706739032c0962d0a9", accountID, {
+    await databases.updateDocument(process.env.APPWRITE_COLLECTION_ID, accountID, {
       accountStatus: "Deleted",
     });
     log(`Account status updated for accountID: ${accountID}`);
