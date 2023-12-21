@@ -78,6 +78,8 @@ export default async ({ req, res, log, error }) => {
         query
       );
 
+      log("Query Respons: \n", response);
+
       if (response.documents.length > 0) {
         // Returns first document in query given that it's always one document related to the account ID that's returned
         log("Account exists in collection. Proceeding to update status ...");
