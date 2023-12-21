@@ -45,4 +45,3 @@ export default async ({ req, res, log, error }) => {
     });
   }
 };
-s;
