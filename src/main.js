@@ -105,7 +105,7 @@ export default async ({ req, res, log, error }) => {
       const response = await databases.updateDocument(DB_ID, accountCollection_id, document_id, {
         accountStatus: "Deleted",
       });
-      log("Response form update status: "+ repsonse);
+      context.log("Response form update status: "+ repsonse);
       return context.res.empty();
     } catch (error) {
       // error("Error Updating Account Status:", error);
