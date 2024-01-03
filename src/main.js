@@ -52,6 +52,8 @@ export default async ({ req, res, log, error }) => {
       return;
     }
     log(`Account document deleted successfully`);
+    
+    return context.res.empty()
   } catch (e) {
     //return error
     return res.json({
@@ -86,7 +88,6 @@ export default async ({ req, res, log, error }) => {
 
         const promise = await databases.deleteDocument(DB_ID, collection_id, documentID);
         log(`Account/User Document deleted`);
-        return promise;
 
       } else {
         log(`Account does not exist in collection. Exting the function...`);
