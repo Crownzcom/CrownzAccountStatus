@@ -7,8 +7,7 @@ const KIN_COLLECTION_ID = process.env.KIN_COLLECTION_ID; //.env
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY; //.env
 
 export default async ({ req, res, log, error }) => {
-  try {
-    // Initialize the Appwrite client
+      // Initialize the Appwrite client
     const client = new Client()
       .setEndpoint("https://cloud.appwrite.io/v1")
       .setProject(PROJECT_ID)
@@ -17,6 +16,7 @@ export default async ({ req, res, log, error }) => {
     // Initialize the Appwrite database client
     const databases = new Databases(client); // Replace with your database ID
 
+  try {
     // Parse the request body and extract the account ID and labels
     const requestBody = JSON.parse(req.bodyRaw);
     const accountID = requestBody.$id;
@@ -33,18 +33,16 @@ export default async ({ req, res, log, error }) => {
 
     //Update account status depending on label type (student or kin)
     if ( labels.includes("kin")) {
-      await queryCollectionAndUpdate(
+      await queryCollectionAndDeleteDoc(
         KIN_COLLECTION_ID,
         accountID,
-        "kinID",
-        databases
+        "kinID"
       );
     } else if (labels.includes("student")) {
-      await queryCollectionAndUpdate(
+      await queryCollectionAndDeleteDoc(
         STUD_COLLECTION_ID,
         accountID,
-        "studID",
-        databases
+        "studID"
       );
     } else {
       log("Account status didn't change");
@@ -62,11 +60,10 @@ export default async ({ req, res, log, error }) => {
   // =================================================================//
   /**------FUNCTION-----**/
   // Checking for existing kin account
-  async function queryCollectionAndUpdate(
+  async function queryCollectionAndDeleteDoc(
     collection_id,
     account_id,
-    IdType,
-    databases
+    IdType
   ) {
     //IdType: Is either 'studID' or 'kinID'
     try {
@@ -86,7 +83,12 @@ export default async ({ req, res, log, error }) => {
         log("Account exists in collection. Proceeding to update status ...");
         const documentID = response.documents[0].$id;
 
-        return await updateStatus(collection_id, documentID, databases);
+        // const promise = databases.deleteDocument('[DATABASE_ID]', '[COLLECTION_ID]', '[DOCUMENT_ID]');
+        const promise = await databases.deleteDocument(DB_ID, collection_id, documentID);
+        log("Account/User Document deleted");
+        return promise;
+
+        // return await updateStatus(collection_id, documentID, databases);
       } else {
         log("Account does not exist in collection. Exting the fucntion...");
         return context.res.empty();
