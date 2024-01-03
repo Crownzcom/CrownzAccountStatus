@@ -7,14 +7,15 @@ const KIN_COLLECTION_ID = process.env.KIN_COLLECTION_ID; //.env
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY; //.env
 
 export default async ({ req, res, log, error }) => {
-      // Initialize the Appwrite client
-    const client = new Client()
-      .setEndpoint("https://cloud.appwrite.io/v1")
-      .setProject(PROJECT_ID)
-      .setKey(APPWRITE_API_KEY);
 
-    // Initialize the Appwrite database client
-    const databases = new Databases(client); // Replace with your database ID
+  // Initialize the Appwrite client
+  const client = new Client()
+    .setEndpoint("https://cloud.appwrite.io/v1")
+    .setProject(PROJECT_ID)
+    .setKey(APPWRITE_API_KEY);
+
+  // Initialize the Appwrite database client
+  const databases = new Databases(client);
 
   try {
     // Parse the request body and extract the account ID and labels
@@ -31,34 +32,34 @@ export default async ({ req, res, log, error }) => {
     log(`User label determined: ${userLabel}`);
     log(`User ID: ${accountID}`);
 
-    //Update account status depending on label type (student or kin)
+    //Delete account document and determine the collection depending on label type (student or kin)
     if ( labels.includes("kin")) {
+      log( `Querying kin table/collection ...`)
       await queryCollectionAndDeleteDoc(
         KIN_COLLECTION_ID,
         accountID,
         "kinID"
       );
     } else if (labels.includes("student")) {
+      log(`Querying student table/collection ...`)
       await queryCollectionAndDeleteDoc(
         STUD_COLLECTION_ID,
         accountID,
         "studID"
       );
     } else {
-      log("Account status didn't change");
+      log(`Account document not found`);
       return;
     }
-    log("Account status changed successfully");
+    log(`Account document deleted successfully`);
   } catch (e) {
-    // Log and return error
-    //   error(`Error updating account status: ${e.message}`);
+    //return error
     return res.json({
-      error: `Error updating account status: ${e.message}`,
+      error: `Error while deleting document: ${e.message}`,
     });
   }
 
-  // =================================================================//
-  /**------FUNCTION-----**/
+  /**------FUNCTIONS-----**/
   // Checking for existing kin account
   async function queryCollectionAndDeleteDoc(
     collection_id,
@@ -76,41 +77,23 @@ export default async ({ req, res, log, error }) => {
         query
       );
 
-      log("Query Respons: ", JSON.parse(response));
+      log(`Query Respons: ${JSON.parse(response)}`);
 
       if (response.documents.length > 0) {
         // Returns first document in query given that it's always one document related to the account ID that's returned
-        log("Account exists in collection. Proceeding to update status ...");
         const documentID = response.documents[0].$id;
+        log(`Document id to be deleted from ${IdType} collection: ${documentID}`);
 
-        // const promise = databases.deleteDocument('[DATABASE_ID]', '[COLLECTION_ID]', '[DOCUMENT_ID]');
         const promise = await databases.deleteDocument(DB_ID, collection_id, documentID);
-        log("Account/User Document deleted");
+        log(`Account/User Document deleted`);
         return promise;
 
-        // return await updateStatus(collection_id, documentID, databases);
       } else {
-        log("Account does not exist in collection. Exting the fucntion...");
+        log(`Account does not exist in collection. Exting the function...`);
         return context.res.empty();
       }
     } catch (error) {
-      // log("Error Updating Account Status:", error);
-      // error("Error Updating Account Status:", error);
-      throw error;
-    }
-  }
-
-  //   Function to update the status of users in the collection
-  async function updateStatus(accountCollection_id, document_id, databases) {
-    try {
-      // Update the document in the database
-      const response = await databases.updateDocument(DB_ID, accountCollection_id, document_id, {
-        accountStatus: "Deleted",
-      });
-      context.log("Response form update status: "+ repsonse);
-      return context.res.empty();
-    } catch (error) {
-      // error("Error Updating Account Status:", error);
+      log(`rror deleting account document in collection: ${error}`);
       throw error;
     }
   }
