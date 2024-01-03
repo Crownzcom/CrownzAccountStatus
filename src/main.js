@@ -77,7 +77,7 @@ export default async ({ req, res, log, error }) => {
         query
       );
 
-      log(`Query Respons: ${JSON.parse(response)}`);
+      log(`Query Respons: ${JSON.stringify(response)}`);
 
       if (response.documents.length > 0) {
         // Returns first document in query given that it's always one document related to the account ID that's returned
@@ -93,7 +93,7 @@ export default async ({ req, res, log, error }) => {
         return context.res.empty();
       }
     } catch (error) {
-      log(`rror deleting account document in collection: ${error}`);
+      log(`Error deleting account document in collection: ${error}`);
       throw error;
     }
   }
