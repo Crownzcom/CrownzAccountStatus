@@ -165,7 +165,7 @@ export default async ({ req, res, log, error }) => {
       // }
     } catch (error) {
       log(`Error encountered on altering kinID in studTable\n ${error}`);
-      console.error("Error:", error);
+      // console.error("Error:", error);
     }
   }
 };
