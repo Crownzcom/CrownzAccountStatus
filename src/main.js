@@ -117,30 +117,52 @@ export default async ({ req, res, log, error }) => {
         query
       );
 
-      log(`Accounts to alter kinID to null Query Response: ${JSON.stringify(response)}`);
+      log(
+        `Accounts to alter kinID to null Query Response: ${JSON.stringify(
+          response
+        )}`
+      );
 
-      if (response.documents.length > 0) {
-        const documentIds = documents.documents.map((doc) => doc.$id);
+      const documents = response.documents;
 
-        // Update the attribute value to null for each document
-        for (const documentId of documentIds) {
-          const updateData = {
-            kinID: null, // Replace with the actual attribute key
-          };
-
-          await databases.updateDocument(
-            DB_ID,
-            STUD_COLLECTION_ID,
-            documentId,
-            updateData
-          );
-        }
-
-        console.log("Attributes updated successfully!");
-      } else {
-        log(`Account does not exist in collection. Exting the function...`);
-        return context.res.empty();
+      if (documents.length === 0) {
+        log("No documents found with the given attribute value.");
+        return;
       }
+
+      // Extract document IDs
+      const documentIds = documents.map((doc) => doc.$id);
+
+      // Update each document
+      for (const id of documentIds) {
+        await database.updateDocument(DB_ID, STUD_COLLECTION_ID, id, {
+          kinID: "null",
+        });
+        log(`Document with ID ${id} updated.`);
+      }
+
+      // if (response.documents.length > 0) {
+      //   const documentIds = documents.documents.map((doc) => doc.$id);
+
+      //   // Update the attribute value to null for each document
+      //   for (const documentId of documentIds) {
+      //     const updateData = {
+      //       kinID: null, // Replace with the actual attribute key
+      //     };
+
+      //     await databases.updateDocument(
+      //       DB_ID,
+      //       STUD_COLLECTION_ID,
+      //       documentId,
+      //       updateData
+      //     );
+      //   }
+
+      //   log("Attributes updated successfully!");
+      // } else {
+      //   log(`Account does not exist in collection. Exting the function...`);
+      //   return context.res.empty();
+      // }
     } catch (error) {
       console.error("Error:", error);
     }
