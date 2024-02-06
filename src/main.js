@@ -100,10 +100,10 @@ export default async ({ req, res, log, error }) => {
     }
   }
 
-  //Fucntion to set kinID in student table to null on kin account deletion
+  //Function to set kinID in student table to null on kin account deletion
   async function setKinIdNull(kinId) {
     /*
-    - query table with given value
+    - query table with the given value
     - if the query returns results, retrieve the documents ids which are saved in an array or variable
     - update the attribute values to null for all the returned documents by looping through all the ids returned from the query
     */
@@ -117,7 +117,7 @@ export default async ({ req, res, log, error }) => {
         query
       );
 
-      log(`Query Respons: ${JSON.stringify(response)}`);
+      log(`Accounts to alter kinID to null Query Response: ${JSON.stringify(response)}`);
 
       if (response.documents.length > 0) {
         const documentIds = documents.documents.map((doc) => doc.$id);
