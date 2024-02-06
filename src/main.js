@@ -136,33 +136,10 @@ export default async ({ req, res, log, error }) => {
       // Update each document
       for (const id of documentIds) {
         await databases.updateDocument(DB_ID, STUD_COLLECTION_ID, id, {
-          kinID: "null",
+          kinID: null,
         });
         log(`Document with ID ${id} updated.`);
       }
-
-      // if (response.documents.length > 0) {
-      //   const documentIds = documents.documents.map((doc) => doc.$id);
-
-      //   // Update the attribute value to null for each document
-      //   for (const documentId of documentIds) {
-      //     const updateData = {
-      //       kinID: null, // Replace with the actual attribute key
-      //     };
-
-      //     await databases.updateDocument(
-      //       DB_ID,
-      //       STUD_COLLECTION_ID,
-      //       documentId,
-      //       updateData
-      //     );
-      //   }
-
-      //   log("Attributes updated successfully!");
-      // } else {
-      //   log(`Account does not exist in collection. Exting the function...`);
-      //   return context.res.empty();
-      // }
     } catch (error) {
       log(`Error encountered on altering kinID in studTable\n ${error}`);
       // console.error("Error:", error);
