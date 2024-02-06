@@ -126,7 +126,7 @@ export default async ({ req, res, log, error }) => {
       const documents = response.documents;
 
       if (documents.length === 0) {
-        log("No documents found with the given attribute value.");
+        log(`No documents found with the given attribute value.`);
         return;
       }
 
@@ -164,6 +164,7 @@ export default async ({ req, res, log, error }) => {
       //   return context.res.empty();
       // }
     } catch (error) {
+      log(`Error encountered on altering kinID in studTable\n ${error}`);
       console.error("Error:", error);
     }
   }
