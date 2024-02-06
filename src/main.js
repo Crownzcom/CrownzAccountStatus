@@ -7,7 +7,6 @@ const KIN_COLLECTION_ID = process.env.KIN_COLLECTION_ID; //.env
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY; //.env
 
 export default async ({ req, res, log, error }) => {
-
   // Initialize the Appwrite client
   const client = new Client()
     .setEndpoint("https://cloud.appwrite.io/v1")
@@ -33,15 +32,12 @@ export default async ({ req, res, log, error }) => {
     log(`User ID: ${accountID}`);
 
     //Delete account document and determine the collection depending on label type (student or kin)
-    if ( labels.includes("kin")) {
-      log( `Querying kin table/collection ...`)
-      await queryCollectionAndDeleteDoc(
-        KIN_COLLECTION_ID,
-        accountID,
-        "kinID"
-      );
+    if (labels.includes("kin")) {
+      log(`Querying kin table/collection ...`);
+      await queryCollectionAndDeleteDoc(KIN_COLLECTION_ID, accountID, "kinID");
+      await setKinIdNull(accountID);
     } else if (labels.includes("student")) {
-      log(`Querying student table/collection ...`)
+      log(`Querying student table/collection ...`);
       await queryCollectionAndDeleteDoc(
         STUD_COLLECTION_ID,
         accountID,
@@ -52,8 +48,8 @@ export default async ({ req, res, log, error }) => {
       return;
     }
     log(`Account document deleted successfully`);
-    
-    return context.res.empty()
+
+    return context.res.empty();
   } catch (e) {
     //return error
     return res.json({
@@ -84,11 +80,16 @@ export default async ({ req, res, log, error }) => {
       if (response.documents.length > 0) {
         // Returns first document in query given that it's always one document related to the account ID that's returned
         const documentID = response.documents[0].$id;
-        log(`Document id to be deleted from ${IdType} collection: ${documentID}`);
+        log(
+          `Document id to be deleted from ${IdType} collection: ${documentID}`
+        );
 
-        const promise = await databases.deleteDocument(DB_ID, collection_id, documentID);
+        const promise = await databases.deleteDocument(
+          DB_ID,
+          collection_id,
+          documentID
+        );
         log(`Account/User Document deleted`);
-
       } else {
         log(`Account does not exist in collection. Exting the function...`);
         return context.res.empty();
@@ -96,6 +97,52 @@ export default async ({ req, res, log, error }) => {
     } catch (error) {
       log(`Error deleting account document in collection: ${error}`);
       throw error;
+    }
+  }
+
+  //Fucntion to set kinID in student table to null on kin account deletion
+  async function setKinIdNull(kinId) {
+    /*
+    - query table with given value
+    - if the query returns results, retrieve the documents ids which are saved in an array or variable
+    - update the attribute values to null for all the returned documents by looping through all the ids returned from the query
+    */
+    try {
+      let query = [];
+      query.push(Query.equal("kinID", kinId));
+
+      const response = await databases.listDocuments(
+        DB_ID,
+        STUD_COLLECTION_ID,
+        query
+      );
+
+      log(`Query Respons: ${JSON.stringify(response)}`);
+
+      if (response.documents.length > 0) {
+        const documentIds = documents.documents.map((doc) => doc.$id);
+
+        // Update the attribute value to null for each document
+        for (const documentId of documentIds) {
+          const updateData = {
+            kinID: null, // Replace with the actual attribute key
+          };
+
+          await databases.updateDocument(
+            DB_ID,
+            STUD_COLLECTION_ID,
+            documentId,
+            updateData
+          );
+        }
+
+        console.log("Attributes updated successfully!");
+      } else {
+        log(`Account does not exist in collection. Exting the function...`);
+        return context.res.empty();
+      }
+    } catch (error) {
+      console.error("Error:", error);
     }
   }
 };
