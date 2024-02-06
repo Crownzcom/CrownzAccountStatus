@@ -135,7 +135,7 @@ export default async ({ req, res, log, error }) => {
 
       // Update each document
       for (const id of documentIds) {
-        await database.updateDocument(DB_ID, STUD_COLLECTION_ID, id, {
+        await databases.updateDocument(DB_ID, STUD_COLLECTION_ID, id, {
           kinID: "null",
         });
         log(`Document with ID ${id} updated.`);
